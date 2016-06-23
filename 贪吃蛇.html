@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>贪吃蛇1.0面向过程</title>
+	<style>
+	*{
+		margin: 0;
+		padding: 0;
+
+	}
+	#container{
+		width: 1000px;
+		margin: 50px auto;
+		border: 1px solid #000;
+	}
+	#ground{
+		width: 1000px;
+		height: 500px;
+		background:  #ccc;
+		position: relative;
+	}
+	#control{
+		height: 50px;
+		line-height: 50px;
+
+	}
+	#ground{
+		width: 1000px;
+		height: 500px;
+		background: #ccc;
+	}
+	#ground .block{
+		width: 20px;
+		height: 20px;
+		float: left;
+		background: orange;
+	}
+	#banner{
+		float: left;
+		margin-left: 5px;
+	}
+	#ground .section{
+		background: red;
+		position: absolute;
+	}
+	#ground .food{
+		background: green;
+		position: absolute;
+	}
+	#buttons{
+		float: right;
+		margin-right: 5px;
+	}
+	
+	</style>
+</head>
+<boby>
+	<div id="container">
+		<div id="ground"></div>
+		<div id="control">
+			<span id="banner"> 贪吃蛇 面向过程 By 丁小小 </span>
+			<div id="buttons">
+				<input id="btn-play" type="button" value="开始">
+				<input id="btn-pulse" type="button" value="暂停">
+			</div>
+		</div>
+	</div>
+	<script>
+//初始化操场 小蛇 食物 移动 吃食物 遇墙死或自己的身体
+//dom操纵
+//动态创建元素：document.createElement();
+//添加父元素 appendChild（）
+//删除元素：element.removChild（）借助自己的爹把自己干掉
+
+		//初始化操场
+		var oGround = document.getElementById('ground');
+		for(var i=0;i<50*25; i++){
+			var oDiv = document.createElement('div');
+			// oDiv.style.width = '20px';
+			// oDiv.style.height = '20px';
+			// oDiv.style.background = 'orange';
+			// oDiv.style.cssFloat = 'left';
+			oDiv.className = 'block';
+			oGround.appendChild(oDiv);
+		}
+
+		//初始化小蛇
+		var snakeBoby = [];
+		for(var i=0;i<3; i++){
+			var oDiv = document.createElement('div');
+			oDiv.className = 'block section';
+			oDiv.style.left = (3 - i) * 20 + 'px';
+			oDiv.style.top = '60px';
+			oGround.appendChild(oDiv);
+			snakeBoby.push(oDiv);//将蛇的每一小节放到数组中
+		}
+
+		//初始化食物
+		var oFood;
+		function createFood(){
+			do{
+				var bFlag = true;//一个标示位。true代表找到合适的坐标，false没找到
+				var iLeft = Math.floor(Math.random() * 50) * 20;//随机产生食物的横坐标
+				var iTop = Math.floor(Math.random() * 25) * 20;//随机产生食物的纵坐标
+				for(var i=0;i<snakeBoby.length; i++){
+					if(snakeBoby[i].offsetLeft == iLeft && snakeBoby[i].offsetTop == iTop){
+						bFlag = false; //如多食物坐标与蛇身重合，则代表没找到
+						break;
+					}
+				}
+			}while(!bFlag);
+			oFood = document.createElement('div');
+			oFood.className = 'block food';
+			oFood.style.left = iLeft + 'px';
+			oFood.style.top = iTop + 'px';
+			oGround.appendChild(oFood);
+		}
+		createFood();
+
+		//蛇移动
+		var direction = 'right';
+		function move(){
+			var snakeHead = snakeBoby[0];//取出蛇头
+			var nextPos = {//
+				left: snakeHead.offsetLeft,
+				top:snakeHead.offsetTop
+			};
+			if(direction == 'left'){
+				// snakeHead[i].style.left = snakeHead[i].offsetLeft - 20 +'px';
+				nextPos.left -= 20;
+			}else if(direction == 'up'){
+				// snakeHead[i].style.top = snakeHead[i].offsetTop - 20 +'px';
+				nextPos.top -= 20;
+			}else if(direction == 'right'){
+				// snakeHead[i].style.left = snakeHead[i].offsetLeft + 20 +'px';
+				nextPos.left += 20;
+			}else if(direction == 'down'){
+				// snakeHead[i].style.top = snakeHead[i].offsetTop + 20 +'px';
+				nextPos.top += 20;
+			}
+
+			//吃食物
+			if(nextPos.left == oFood.offsetLeft && nextPos.top == oFood.offsetTop){
+				
+				// snakeTail.style.left = snakeTail.offsetLeft
+				// var snakeTail = snakeBoby[snakeBoby.length-1];
+				var snakeTailPos = {
+					left: snakeBoby[snakeBoby.length-1].offsetLeft,
+					top: snakeBoby[snakeBoby.length-1].offsetTop
+				};
+			}
+
+			for(var i=0; i<snakeBoby.length; i++){
+				// snakeBoby[i].style.left = snakeBoby[i-1].offsetLeft + 'px';
+				// snakeBoby[i].style.top = snakeBoby[i-1].offsetTop + 'px';
+				var nowPos = {
+					left: snakeBoby[i].offsetLeft,
+					top: snakeBoby[i].offsetTop
+				};
+				snakeBoby[i].style.left = nextPos.left + 'px';
+				snakeBoby[i].style.top = nextPos.top + 'px';
+				nextPos = nowPos;
+			}
+			
+			if(snakeHead.offsetLeft == oFood.offsetLeft && snakeHead.offsetTop == oFood.offsetTop){//蛇吃到食物
+				var snakeTail = snakeBoby[snakeBoby.length-1];
+				var snakeTailNowPos = {
+					left: snakeTail.offsetLeft,
+					top: snakeTail.offsetTop
+				};
+				oFood.className = 'block section';
+				snakeBoby.splice(snakeBoby.length-1, 0, oFood);
+				snakeTail.style.left = snakeTailPos.left + 'px';
+				snakeTail.style.top = snakeTailPos.top + 'px';
+				oFood.style.left = snakeTailNowPos.left + 'px';
+				oFood.style.top = snakeTailNowPos.top + 'px';
+				createFood();//生成新的食物
+			}
+
+
+		}
+
+		var timer;
+		var oBtnPlay = document.getElementById('btn-play');
+		var oBtnPulse = document.getElementById('btn-pulse');
+		oBtnPlay.onclick = function(){
+			if(timer){
+				clearInterval(timer);
+				oBtnPlay.val('结束');
+			}
+
+			timer = setInterval(function(){
+				
+				move();
+				
+			},300);
+		};
+		oBtnPulse.onclick = function(){
+			clearInterval(timer);
+		}
+		//键盘处理事件
+
+		document.onkeydown = function(e){
+			e = e || window.event;
+			var keyCode = e.which || e.keyCode;
+			switch(keyCode){
+				case 37://left
+					if(direction != 'right'){
+						 direction = 'left';
+					}
+					break;
+				case 38://up
+					if(direction != 'down'){
+						direction = 'up';
+					} 
+					break;
+				case 39://right
+					if(direction != 'left'){
+						direction = 'right';
+					} 
+					break;
+				case 40://down
+					if(direction != 'up'){
+						direction = 'down';
+					} 
+					break;
+			}
+		};
+
+		//遇墙死或自己的身体
+
+	</script>
+</boby>
+</html>
