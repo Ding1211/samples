@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" name="viewport" content="width=device-width,initial-scale=1.0">
+		<title>Gallery</title>
+		<link rel="stylesheet" type="text/css" href="animate.css">
+		<style type="text/css">
+		*{
+			margin: 0;
+			padding: 0;
+		}
+		ul,ol{
+			list-style: none;
+		}
+		a{
+			text-decoration: none;
+		}
+		img{
+			border: 0;
+		}
+		#container li{
+			float: left;
+			overflow: hidden;
+		}
+		#container li img{
+			width: 100%;
+			height: 100%;
+		}
+		#loading{
+			position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            background: #ccc;
+            color: #fff;
+            line-height: 100%;
+		}
+		#loading span{
+			width: 100px;
+            height: 30px;
+            position: absolute;
+            left: 50%;
+            margin-left: -50px;
+            top: 50%;
+            margin-top: -15px;
+            text-align: center;
+            line-height: 30px;
+		}
+		#large-img-container{
+			width: 100%;
+			height: 100%;
+			position: absolute;
+			background: #000;
+			display: none;
+		}
+		#large-img-container img{  /*竖着*/
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			-webkit-transform: translateX(-50%) translateY(-50%);*//*不确定高度的元素垂直居中通过css3 */
+		}
+		</style>
+	</head>
+	<body>
+		<ul class="img-container" id="container">
+		</ul>
+		<div id="loading">
+			<span>loading...</span>
+		</div>
+		<div id="large-img-container" class="animated fadeIn">
+		</div>
+		<script type="text/javascript" src="zepto.min.js"></script>
+		<script>
+			$(function(){
+				var $container = $('#container'),
+					$largeContainer = $('#large-img-container');
+					$loading = $('#loading'),
+					$win = $(window);
+					var aImg = [];
+				var padding = 2,
+					num = 0;//计数
+					for(var i=0; i<16; i++){
+						var oImg = new Image();
+						
+						oImg.onload = function(){
+							aImg.push(this);
+							num++;
+							var p = padding;
+							if(num%4==0){
+								p=0;
+							}
+							var $li = $('<li data-largeSrc="'+(this.index)+'-large.jpg"class="animated bounceIn">').css({
+								paddingTop: padding,
+								paddingRight: p
+							});
+
+
+							var cvs = $("<canvas></canvas>")[0];
+							// var ctx = cvs.getContext('2d');
+							// ctx.drawImage(this,0,0,this.width,this.height);
+							$li.append(cvs);
+							$container.append($li);
+							
+
+							if(num == 16){
+								var iWinWidth = document.documentElement.clientWidth||document.body.clientWidth;
+								var iPicWidth = Math.floor((iWinWidth-padding*3)/4);
+								aImg.sort(function(a,b){
+									return a.index - b.index;
+								});
+								$('canvas',$container).each(function(index,elem){
+									elem.width = elem.height = iPicWidth;
+									var ctx = elem.getContext('2d');
+									ctx.drawImage(aImg[index],0,0,iPicWidth,iPicWidth);
+								});
+								$loading.hide();
+							}
+							
+						}
+						oImg.index = i+1;
+						oImg.src = 'img/'+(i+1)+'.jpg';
+					}
+					$container.on('tap','li',function(){
+						var now = index = $(this).index();
+						loadImg(now);
+					});
+					function loadImg(idx,animate){
+						$largeContainer.show();
+						var imgSrc = 'img/'+(idx+1)+'-large.jpg'; 
+						var oImg = new Image();
+					    oImg.onload = function(){	
+						 	var iImgWidth = this.width,
+						 		iImgHeight = this.height,
+						 		iClientWidth = $(window).width(),
+						 		iClientHeight = $(window).height();
+						 		if(iImgHeight/iImgWidth > (iClientHeight/iClientWidth)){
+						 			$(this).css({
+						 				height: iClientHeight
+						 			});
+						 			
+						 		}else{
+						 			$(this).css({
+						 				width: iClientWidth
+						 			});
+						 			
+						 		}
+						 		$(this).addClass(animate);
+						 		$largeContainer.empty().append(this);
+
+						 };
+						  oImg.src = imgSrc;
+					}
+					var index = 0;
+					$largeContainer.on('tap',function(){
+						$(this).hide();
+					}).on('swipeLeft',function(){
+						index--;
+						if(index == -1){
+							index=0;
+						}
+						// $('img',this).addClass('animated bounceInRight');
+						loadImg(index,'animated fadeIn');
+					}).on('swipeRight',function(){
+						index++;
+						if(index >= 16){
+							index = 15;
+						}
+						loadImg(index,'animated fadeIn');
+					});
+			
+
+			});
+		</script>
+	</body>
+</html>
